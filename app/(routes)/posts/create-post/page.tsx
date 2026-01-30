@@ -26,7 +26,17 @@ export default async function CreatePostPage() {
     const { userId } = await auth();
     if (!userId) return;
 
-    const content = formData.get("content");
+    const raw = formData.get("content") as string | null;
+    if (!raw) return;
+
+    const content = raw.trim();
+
+    if (content.length === 0) {
+      throw new Error("Post cannot be blank.");
+    }
+    if (content.includes(" ")) {
+      throw new Error("Posts must be a single word with no spaces.");
+    }
 
     await db.query(
       `INSERT INTO social_media_posts (user_id, content) VALUES ($1, $2)`,
@@ -52,6 +62,8 @@ export default async function CreatePostPage() {
         <textarea
           name="content"
           placeholder="What's on your mind?"
+          required
+          title="Posts must be a single word with no spaces."
           className="w-full p-3 rounded-xl resize-none"
           style={{
             backgroundColor: "var(--color-card)",
@@ -63,9 +75,9 @@ export default async function CreatePostPage() {
 
         <button
           className="
-    px-4 py-2 rounded-lg font-medium transition
-    hover:bg-var(--color-accent-hover)
-  "
+            px-4 py-2 rounded-lg font-medium transition
+            hover:bg-var(--color-accent-hover)
+          "
           style={{
             backgroundColor: "var(--color-accent)",
             color: "white",

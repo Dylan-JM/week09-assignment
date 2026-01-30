@@ -6,7 +6,6 @@ type PostEditorProps = {
     id: string;
     content: string;
     created_at?: string;
-    // add any other fields your post object includes
   };
   updatePostAction: (formData: FormData) => void;
   deletePostAction: (formData: FormData) => void;
@@ -41,10 +40,10 @@ export default function PostEditor({
               type="button"
               onClick={() => setIsEditing(true)}
               className="
-              px-3 py-1 rounded font-medium
-              bg-blue-600 text-white
-              hover:bg-blue-700 transition
-            "
+                px-3 py-1 rounded font-medium
+                bg-blue-600 text-white
+                hover:bg-blue-700 transition
+              "
             >
               Edit
             </button>
@@ -53,10 +52,10 @@ export default function PostEditor({
               <input type="hidden" name="postId" value={post.id} />
               <button
                 className="
-                px-3 py-1 rounded font-medium
-                bg-red-600 text-white
-                hover:bg-red-700 transition
-              "
+                  px-3 py-1 rounded font-medium
+                  bg-red-600 text-white
+                  hover:bg-red-700 transition
+                "
               >
                 Delete
               </button>
@@ -66,19 +65,32 @@ export default function PostEditor({
       )}
 
       {isEditing && (
-        <form action={updatePostAction} className="space-y-3 w-full">
+        <form
+          action={updatePostAction}
+          className="space-y-3 w-full"
+          onSubmit={(e) => {
+            const trimmed = content.trim();
+
+            if (trimmed.length === 0) {
+              e.preventDefault();
+              alert("Post cannot be blank.");
+              return;
+            }
+
+            if (trimmed.includes(" ")) {
+              e.preventDefault();
+              alert("Posts must be a single word with no spaces.");
+              return;
+            }
+          }}
+        >
           <textarea
             name="content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="
-            w-full p-3 rounded-xl resize-none
-            bg-white
-            border border-gray-300
-            text-gray-800
-            shadow-sm
-            focus:outline-none focus:ring-2 focus:ring-blue-400
-          "
+            required
+            title="Posts must be a single word with no spaces."
+            className="w-full p-3 rounded-xl resize-none bg-white border border-gray-300 text-gray-800 shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-400"
             style={{ minHeight: "120px" }}
           />
 
@@ -88,10 +100,10 @@ export default function PostEditor({
             <button
               type="submit"
               className="
-              px-3 py-1 rounded font-medium
-              bg-green-600 text-white
-              hover:bg-green-700 transition
-            "
+          px-3 py-1 rounded font-medium
+          bg-green-600 text-white
+          hover:bg-green-700 transition
+        "
             >
               Save
             </button>
@@ -99,11 +111,8 @@ export default function PostEditor({
             <button
               type="button"
               onClick={() => setIsEditing(false)}
-              className="
-              px-3 py-1 rounded font-medium
-              bg-gray-200 text-gray-700
-              hover:bg-gray-300 transition
-            "
+              className="px-3 py-1 rounded font-medium bg-gray-200 text-gray-700 hover:bg-gray-300 transition
+        "
             >
               Cancel
             </button>

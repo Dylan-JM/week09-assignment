@@ -51,7 +51,16 @@ export default function ProfileEditor({
       )}
 
       {isEditing && (
-        <form action={updateProfileAction} className="space-y-4">
+        <form
+          action={updateProfileAction}
+          className="space-y-4"
+          onSubmit={(e) => {
+            if (nickname.includes(" ")) {
+              e.preventDefault();
+              alert("Nickname must be a single word with no spaces.");
+            }
+          }}
+        >
           <div className="flex flex-col">
             <label>Nickname</label>
             <input
@@ -59,6 +68,9 @@ export default function ProfileEditor({
               value={nickname}
               onChange={(e) => setNickname(e.target.value)}
               className="border p-2 rounded"
+              pattern="^\S+$"
+              title="Nickname must be a single word with no spaces."
+              required
             />
           </div>
 
