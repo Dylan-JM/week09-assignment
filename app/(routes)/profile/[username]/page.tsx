@@ -4,6 +4,8 @@ import { auth } from "@clerk/nextjs/server";
 import ProfileEditor from "@/app/_components/ProfileEditor";
 import PostEditor from "@/app/_components/PostEditor";
 import * as Avatar from "@radix-ui/react-avatar";
+import LikeButton from "@/app/_components/LikeButton";
+import { toggleLike } from "@/app/_actions/toggleLike";
 
 export default async function ProfilePage({ params }) {
   const { username } = await params;
@@ -21,8 +23,26 @@ export default async function ProfilePage({ params }) {
   }
 
   const postsQuery = await db.query(
-    `SELECT * FROM social_media_posts WHERE user_id = $1 ORDER BY created_at DESC`,
-    [profile.user_id],
+    `
+    SELECT 
+      p.*,
+      (
+        SELECT COUNT(*) 
+        FROM social_media_post_likes l 
+        WHERE l.post_id = p.id
+      ) AS like_count,
+      (
+        SELECT EXISTS(
+          SELECT 1 
+          FROM social_media_post_likes l 
+          WHERE l.post_id = p.id AND l.user_id = $2
+        )
+      ) AS is_liked
+    FROM social_media_posts p
+    WHERE p.user_id = $1
+    ORDER BY p.created_at DESC
+  `,
+    [profile.user_id, userId],
   );
 
   const posts = postsQuery.rows;
@@ -120,6 +140,13 @@ export default async function ProfilePage({ params }) {
               <span className="opacity-60 text-sm block mt-2">
                 {new Date(post.created_at).toLocaleString()}
               </span>
+
+              <LikeButton
+                postId={post.id}
+                isLiked={post.is_liked}
+                likeCount={post.like_count}
+                toggleLikeAction={toggleLike}
+              />
             </li>
           ))}
         </ul>
