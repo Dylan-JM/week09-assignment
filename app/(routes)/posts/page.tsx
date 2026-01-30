@@ -38,11 +38,19 @@ export default async function PostsPage() {
   const posts = postsQuery.rows;
 
   return (
-    <main className="px-6 py-10 max-w-2xl mx-auto space-y-10">
-      <h1 className="text-3xl font-bold text-blue-500">Latest Posts</h1>
+    <main
+      className="px-6 py-10 max-w-2xl mx-auto space-y-10"
+      style={{ color: "var(--color-foreground)" }}
+    >
+      <h1
+        className="text-3xl font-bold"
+        style={{ color: "var(--color-accent)" }}
+      >
+        Latest Posts
+      </h1>
 
       {posts.length === 0 && (
-        <p className="opacity-70">
+        <p style={{ color: "var(--color-muted-foreground)" }}>
           No posts yet. Be the first to share something.
         </p>
       )}
@@ -50,8 +58,16 @@ export default async function PostsPage() {
       <ul className="space-y-10">
         {posts.map((post, index) => (
           <li key={post.id} className="space-y-4">
+            {/* User Header */}
             <div className="flex items-center gap-3">
-              <Avatar.Root className="inline-flex items-center justify-center w-10 h-10 rounded-full bg-blue-600 text-white">
+              <Avatar.Root
+                className="inline-flex items-center justify-center w-10 h-10 rounded-full font-semibold"
+                style={{
+                  backgroundColor: "var(--color-card)",
+                  border: "1px solid var(--color-card-border)",
+                  color: "var(--color-foreground)",
+                }}
+              >
                 <Avatar.Fallback delayMs={0}>
                   {post.nickname[0].toUpperCase()}
                 </Avatar.Fallback>
@@ -61,7 +77,10 @@ export default async function PostsPage() {
                 <HoverCard.Trigger asChild>
                   <Link
                     href={`/profile/${post.nickname}`}
-                    className="font-semibold text-blue-400 hover:underline"
+                    className="font-semibold transition"
+                    style={{
+                      color: "var(--color-accent)",
+                    }}
                   >
                     {post.nickname}
                   </Link>
@@ -70,21 +89,39 @@ export default async function PostsPage() {
                 <HoverCard.Portal>
                   <HoverCard.Content
                     sideOffset={5}
-                    className="bg-gray-800 text-white p-4 rounded shadow max-w-xs"
+                    className="p-4 rounded-xl shadow max-w-xs"
+                    style={{
+                      backgroundColor: "var(--color-card)",
+                      border: "1px solid var(--color-card-border)",
+                      color: "var(--color-foreground)",
+                    }}
                   >
                     <p className="font-bold">{post.nickname}</p>
                     {post.bio && (
-                      <p className="opacity-70 text-sm mt-1">{post.bio}</p>
+                      <p
+                        className="text-sm mt-1"
+                        style={{ color: "var(--color-muted-foreground)" }}
+                      >
+                        {post.bio}
+                      </p>
                     )}
                   </HoverCard.Content>
                 </HoverCard.Portal>
               </HoverCard.Root>
             </div>
 
-            <p className="bg-gray-600 border border-gray-800 p-4 rounded-lg">
+            {/* Post Content */}
+            <p
+              className="p-4 rounded-xl leading-relaxed"
+              style={{
+                backgroundColor: "var(--color-card)",
+                border: "1px solid var(--color-card-border)",
+              }}
+            >
               {post.content}
             </p>
 
+            {/* Like Button */}
             <LikeButton
               postId={post.id}
               isLiked={post.is_liked}
@@ -92,12 +129,20 @@ export default async function PostsPage() {
               toggleLikeAction={toggleLike}
             />
 
-            <span className="opacity-60 text-sm block">
+            {/* Timestamp */}
+            <span
+              className="text-sm block"
+              style={{ color: "var(--color-muted-foreground)" }}
+            >
               {new Date(post.created_at).toLocaleString()}
             </span>
 
+            {/* Separator */}
             {index < posts.length - 1 && (
-              <Separator.Root className="h-px bg-gray-700 mt-6" />
+              <Separator.Root
+                className="h-px mt-6"
+                style={{ backgroundColor: "var(--color-card-border)" }}
+              />
             )}
           </li>
         ))}
