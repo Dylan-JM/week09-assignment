@@ -34,20 +34,30 @@ export default function PostEditor({
     <div className="w-full">
       {!isEditing && (
         <div className="flex justify-between items-start gap-4">
-          <p className="mb-2">{post.content}</p>
+          <p className="mb-2 text-gray-800">{post.content}</p>
 
           <div className="flex gap-2">
             <button
               type="button"
               onClick={() => setIsEditing(true)}
-              className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+              className="
+              px-3 py-1 rounded font-medium
+              bg-blue-600 text-white
+              hover:bg-blue-700 transition
+            "
             >
               Edit
             </button>
 
             <form action={deletePostAction}>
               <input type="hidden" name="postId" value={post.id} />
-              <button className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
+              <button
+                className="
+                px-3 py-1 rounded font-medium
+                bg-red-600 text-white
+                hover:bg-red-700 transition
+              "
+              >
                 Delete
               </button>
             </form>
@@ -61,20 +71,39 @@ export default function PostEditor({
             name="content"
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            className="w-full border p-2 rounded bg-gray-700 text-white"
+            className="
+            w-full p-3 rounded-xl resize-none
+            bg-white
+            border border-gray-300
+            text-gray-800
+            shadow-sm
+            focus:outline-none focus:ring-2 focus:ring-blue-400
+          "
+            style={{ minHeight: "120px" }}
           />
+
           <input type="hidden" name="postId" value={post.id} />
+
           <div className="flex gap-3 justify-end">
             <button
               type="submit"
-              className="bg-green-600 text-white px-3 py-1 rounded hover:bg-green-700"
+              className="
+              px-3 py-1 rounded font-medium
+              bg-green-600 text-white
+              hover:bg-green-700 transition
+            "
             >
               Save
             </button>
+
             <button
               type="button"
               onClick={() => setIsEditing(false)}
-              className="bg-gray-500 text-white px-3 py-1 rounded hover:bg-gray-600"
+              className="
+              px-3 py-1 rounded font-medium
+              bg-gray-200 text-gray-700
+              hover:bg-gray-300 transition
+            "
             >
               Cancel
             </button>
