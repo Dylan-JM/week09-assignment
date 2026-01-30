@@ -32,7 +32,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const profile = profileQuery.rows[0];
   if (!profile) notFound();
 
-  // ⭐ Updated query to include like_count + is_liked
   const postsQuery = await db.query<Post>(
     `
     SELECT 
@@ -157,7 +156,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 isOwner={userId === profile.user_id}
               />
 
-              {/* ⭐ LIKE BUTTON IS BACK */}
               <LikeButton
                 postId={post.id}
                 isLiked={post.is_liked}
