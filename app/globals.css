@@ -1,6 +1,5 @@
 @import "tailwindcss";
 
-/* Light mode defaults */
 :root {
   --background: #f8f9fa;
   --foreground: #1a1a1a;
@@ -11,14 +10,14 @@
   --muted: #6b7280;
   --muted-foreground: #9ca3af;
 
-  --accent: #3b82f6; /* blue-500 */
-  --accent-hover: #2563eb; /* blue-600 */
+  --accent: #3b82f6;
+  --accent-hover: #2563eb;
 
   --danger: #ef4444;
+  --danger-hover: #720000;
   --success: #22c55e;
 }
 
-/* Tailwind theme variables */
 @theme {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -33,27 +32,11 @@
   --color-accent-hover: var(--accent-hover);
 
   --color-danger: var(--danger);
+  --color-danger-hover: var(--danger-hover);
   --color-success: var(--success);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
-
-/* Dark mode overrides */
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0d0d0f;
-    --foreground: #e5e5e5;
-
-    --card: #1a1a1c;
-    --card-border: #2a2a2d;
-
-    --muted: #9ca3af;
-    --muted-foreground: #6b7280;
-
-    --accent: #3b82f6;
-    --accent-hover: #60a5fa;
-  }
 }
 
 /* Base styles */

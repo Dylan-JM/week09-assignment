@@ -37,17 +37,40 @@ export default async function CreatePostPage() {
   }
 
   return (
-    <main className="px-6 py-10 max-w-2xl mx-auto">
-      <h1 className="text-3xl font-bold text-blue-500 mb-6">Create a Post</h1>
+    <main
+      className="px-6 py-10 max-w-2xl mx-auto space-y-6"
+      style={{ color: "var(--color-foreground)" }}
+    >
+      <h1
+        className="text-3xl font-bold mb-6"
+        style={{ color: "var(--color-accent)" }}
+      >
+        Create a Post
+      </h1>
 
       <form action={createPost} className="space-y-4">
         <textarea
           name="content"
-          className="w-full p-3 border border-gray-700 bg-gray-800 text-white rounded"
           placeholder="What's on your mind?"
+          className="w-full p-3 rounded-xl resize-none"
+          style={{
+            backgroundColor: "var(--color-card)",
+            border: "1px solid var(--color-card-border)",
+            color: "var(--color-foreground)",
+            minHeight: "140px",
+          }}
         />
 
-        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
+        <button
+          className="
+    px-4 py-2 rounded-lg font-medium transition
+    hover:bg-var(--color-accent-hover)
+  "
+          style={{
+            backgroundColor: "var(--color-accent)",
+            color: "white",
+          }}
+        >
           Post
         </button>
       </form>
