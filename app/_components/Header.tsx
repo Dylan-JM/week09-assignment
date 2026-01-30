@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/app/_utils/dbConnection";
+import { SignOutButton } from "@clerk/nextjs";
 
 export default async function Header() {
   const { userId } = await auth();
@@ -32,9 +33,9 @@ export default async function Header() {
         </Link>
       )}
 
-      <Link href="/sign-out" className="ml-auto hover:underline">
-        Sign Out
-      </Link>
+      <SignOutButton redirectUrl="/sign-in">
+        <div className="ml-auto cursor-pointer hover:underline">Sign Out</div>
+      </SignOutButton>
     </header>
   );
 }
