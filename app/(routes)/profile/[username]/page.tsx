@@ -3,6 +3,8 @@ import { notFound, redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import ProfileEditor from "@/app/_components/ProfileEditor";
 import PostEditor from "@/app/_components/PostEditor";
+import LikeButton from "@/app/_components/LikeButton";
+import { toggleLike } from "@/app/_actions/toggleLike";
 import * as Avatar from "@radix-ui/react-avatar";
 
 type ProfilePageProps = {
@@ -14,8 +16,8 @@ type Post = {
   content: string;
   created_at: string;
   user_id: string;
-  is_liked?: boolean;
-  like_count?: number;
+  like_count: number;
+  is_liked: boolean;
 };
 
 export default async function ProfilePage({ params }: ProfilePageProps) {
@@ -30,9 +32,28 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
   const profile = profileQuery.rows[0];
   if (!profile) notFound();
 
+  // ⭐ Updated query to include like_count + is_liked
   const postsQuery = await db.query<Post>(
-    `SELECT * FROM social_media_posts WHERE user_id = $1 ORDER BY created_at DESC`,
-    [profile.user_id],
+    `
+    SELECT 
+      p.*,
+      (
+        SELECT COUNT(*) 
+        FROM social_media_post_likes l 
+        WHERE l.post_id = p.id
+      ) AS like_count,
+      (
+        SELECT EXISTS(
+          SELECT 1 
+          FROM social_media_post_likes l 
+          WHERE l.post_id = p.id AND l.user_id = $1
+        )
+      ) AS is_liked
+    FROM social_media_posts p
+    WHERE p.user_id = $2
+    ORDER BY p.created_at DESC
+    `,
+    [userId, profile.user_id],
   );
 
   const posts = postsQuery.rows;
@@ -92,7 +113,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
       {/* PROFILE HEADER */}
       <section className="space-y-4 border-l-4 border-blue-500 pl-4">
         <div className="flex items-center gap-4">
-          {/* Avatar */}
           <Avatar.Root
             className="
               inline-flex items-center justify-center
@@ -106,7 +126,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             </Avatar.Fallback>
           </Avatar.Root>
 
-          {/* Profile Editor */}
           <ProfileEditor
             profile={profile}
             updateProfileAction={updateProfile}
@@ -136,6 +155,14 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
                 updatePostAction={updatePost}
                 deletePostAction={deletePost}
                 isOwner={userId === profile.user_id}
+              />
+
+              {/* ⭐ LIKE BUTTON IS BACK */}
+              <LikeButton
+                postId={post.id}
+                isLiked={post.is_liked}
+                likeCount={post.like_count}
+                toggleLikeAction={toggleLike}
               />
 
               <span className="text-sm text-gray-500 block">
