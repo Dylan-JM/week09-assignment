@@ -1,5 +1,6 @@
 import { db } from "@/app/_utils/dbConnection";
 import { auth } from "@clerk/nextjs/server";
+import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
 export default async function ProfilePage() {
@@ -17,7 +18,7 @@ export default async function ProfilePage() {
   async function createProfile(formData) {
     "use server";
 
-    const { userId } = auth();
+    const { userId } = await auth();
     if (!userId) return;
 
     const nickname = formData.get("nickname");
@@ -28,7 +29,8 @@ export default async function ProfilePage() {
       [userId, bio, nickname],
     );
 
-    redirect(`/profile/${nickname}`);
+    revalidatePath("/");
+    redirect("/profile");
   }
 
   return (

@@ -1,8 +1,25 @@
-import { db } from "@/app/_utils/dbConnection";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import { db } from "@/app/_utils/dbConnection";
 
-export default function CreatePostPage() {
+export default async function CreatePostPage() {
+  const { userId } = await auth();
+
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  const profileQuery = await db.query(
+    `SELECT * FROM profiles WHERE user_id = $1`,
+    [userId],
+  );
+
+  const profile = profileQuery.rows[0];
+
+  if (!profile) {
+    redirect("/profile");
+  }
+
   async function createPost(formData) {
     "use server";
 
@@ -16,23 +33,21 @@ export default function CreatePostPage() {
       [userId, content],
     );
 
-    redirect("/posts");
+    redirect(`/profile/${profile.nickname}`);
   }
 
   return (
-    <main className="px-6 py-10 max-w-xl mx-auto space-y-6">
-      <h1 className="text-3xl font-bold text-blue-500">Create a Post</h1>
+    <main className="px-6 py-10 max-w-2xl mx-auto">
+      <h1 className="text-3xl font-bold text-blue-500 mb-6">Create a Post</h1>
 
-      <form
-        action={createPost}
-        className="space-y-4 border p-6 rounded-lg shadow"
-      >
-        <div className="flex flex-col">
-          <label>Content</label>
-          <textarea name="content" required className="border p-2 rounded" />
-        </div>
+      <form action={createPost} className="space-y-4">
+        <textarea
+          name="content"
+          className="w-full p-3 border border-gray-700 bg-gray-800 text-white rounded"
+          placeholder="What's on your mind?"
+        />
 
-        <button className="bg-blue-600 text-white p-2 rounded hover:bg-blue-700">
+        <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
           Post
         </button>
       </form>

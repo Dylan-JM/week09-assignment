@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { db } from "@/app/_utils/dbConnection";
 import { SignOutButton } from "@clerk/nextjs";
+
 import * as NavigationMenu from "@radix-ui/react-navigation-menu";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import * as Avatar from "@radix-ui/react-avatar";
@@ -25,7 +26,6 @@ export default async function Header() {
     <header className="w-full bg-blue-600 text-white p-4">
       <NavigationMenu.Root>
         <NavigationMenu.List className="flex items-center gap-6">
-          {/* Home */}
           <NavigationMenu.Item>
             <NavigationMenu.Link asChild>
               <Link href="/" className="hover:underline">
@@ -34,7 +34,6 @@ export default async function Header() {
             </NavigationMenu.Link>
           </NavigationMenu.Item>
 
-          {/* Posts */}
           <NavigationMenu.Item>
             <NavigationMenu.Link asChild>
               <Link href="/posts" className="hover:underline">
@@ -43,7 +42,6 @@ export default async function Header() {
             </NavigationMenu.Link>
           </NavigationMenu.Item>
 
-          {/* Create Post */}
           <NavigationMenu.Item>
             <NavigationMenu.Link asChild>
               <Link href="/posts/create-post" className="hover:underline">
@@ -54,7 +52,19 @@ export default async function Header() {
 
           <div className="ml-auto" />
 
-          {/* User Dropdown */}
+          {!nickname && userId && (
+            <NavigationMenu.Item>
+              <NavigationMenu.Link asChild>
+                <Link
+                  href="/profile"
+                  className="bg-white text-blue-600 px-3 py-1 rounded hover:bg-gray-200"
+                >
+                  Create Profile
+                </Link>
+              </NavigationMenu.Link>
+            </NavigationMenu.Item>
+          )}
+
           {nickname && (
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild>
