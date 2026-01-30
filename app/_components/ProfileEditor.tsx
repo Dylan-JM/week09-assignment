@@ -2,11 +2,23 @@
 
 import { useState } from "react";
 
+type Profile = {
+  nickname: string;
+  bio: string | null;
+  user_id: string;
+};
+
+type ProfileEditorProps = {
+  profile: Profile;
+  updateProfileAction: (formData: FormData) => void;
+  isOwner: boolean;
+};
+
 export default function ProfileEditor({
   profile,
   updateProfileAction,
   isOwner,
-}) {
+}: ProfileEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [nickname, setNickname] = useState(profile.nickname);
   const [bio, setBio] = useState(profile.bio || "");
