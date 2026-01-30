@@ -1,8 +1,11 @@
 import { db } from "@/app/_utils/dbConnection";
 import { notFound } from "next/navigation";
+import { auth } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
 
 export default async function ProfilePage({ params }) {
   const { username } = await params;
+  const { userId } = await auth();
 
   const profileQuery = await db.query(
     `SELECT * FROM profiles WHERE nickname = $1`,
@@ -22,16 +25,28 @@ export default async function ProfilePage({ params }) {
 
   const posts = postsQuery.rows;
 
+  async function deletePost(formData) {
+    "use server";
+
+    const { userId } = await auth();
+    if (!userId) return;
+
+    const postId = formData.get("postId");
+
+    await db.query(
+      `DELETE FROM social_media_posts WHERE id = $1 AND user_id = $2`,
+      [postId, userId],
+    );
+
+    redirect(`/profile/${profile.nickname}`);
+  }
+
   return (
     <main className="px-6 py-10 space-y-10">
       <section className="space-y-2 border-l-4 border-blue-500 pl-4">
         <h1 className="text-3xl font-bold text-blue-500">{profile.nickname}</h1>
 
         {profile.bio && <p className="opacity-80">{profile.bio}</p>}
-
-        {profile.age && (
-          <p className="opacity-60 text-sm">Age: {profile.age}</p>
-        )}
       </section>
 
       <section className="space-y-4">
@@ -54,6 +69,15 @@ export default async function ProfilePage({ params }) {
               <span className="opacity-60 text-sm">
                 {new Date(post.created_at).toLocaleString()}
               </span>
+
+              {userId === profile.user_id && (
+                <form action={deletePost} className="mt-3">
+                  <input type="hidden" name="postId" value={post.id} />
+                  <button className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
+                    Delete
+                  </button>
+                </form>
+              )}
             </li>
           ))}
         </ul>
