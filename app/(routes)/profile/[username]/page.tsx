@@ -5,18 +5,22 @@ import ProfileEditor from "@/app/_components/ProfileEditor";
 import PostEditor from "@/app/_components/PostEditor";
 import * as Avatar from "@radix-ui/react-avatar";
 
-export default async function ProfilePage({ params }) {
+type ProfilePageProps = {
+  params: { username: string };
+};
+
+type Post = {
+  id: string;
+  content: string;
+  created_at: string;
+  user_id: string;
+  is_liked?: boolean;
+  like_count?: number;
+};
+
+export default async function ProfilePage({ params }: ProfilePageProps) {
   const { username } = await params;
   const { userId } = await auth();
-
-  type Post = {
-    id: string;
-    content: string;
-    created_at: string;
-    user_id: string;
-    is_liked?: boolean;
-    like_count?: number;
-  };
 
   const profileQuery = await db.query(
     `SELECT * FROM profiles WHERE nickname = $1`,
@@ -39,7 +43,7 @@ export default async function ProfilePage({ params }) {
     const { userId } = await auth();
     if (!userId) return;
 
-    const postId = formData.get("postId");
+    const postId = formData.get("postId") as string;
 
     await db.query(
       `DELETE FROM social_media_posts WHERE id = $1 AND user_id = $2`,
@@ -55,8 +59,8 @@ export default async function ProfilePage({ params }) {
     const { userId } = await auth();
     if (!userId) return;
 
-    const postId = formData.get("postId");
-    const content = formData.get("content");
+    const postId = formData.get("postId") as string;
+    const content = formData.get("content") as string;
 
     await db.query(
       `UPDATE social_media_posts SET content = $1 WHERE id = $2 AND user_id = $3`,
@@ -72,8 +76,8 @@ export default async function ProfilePage({ params }) {
     const { userId } = await auth();
     if (!userId) return;
 
-    const nickname = formData.get("nickname");
-    const bio = formData.get("bio");
+    const nickname = formData.get("nickname") as string;
+    const bio = formData.get("bio") as string;
 
     await db.query(
       `UPDATE profiles SET nickname = $1, bio = $2 WHERE user_id = $3`,
@@ -122,7 +126,7 @@ export default async function ProfilePage({ params }) {
         )}
 
         <ul className="space-y-8">
-          {posts.map((post: Post) => (
+          {posts.map((post) => (
             <li
               key={post.id}
               className="bg-white border border-gray-200 shadow-sm p-5 rounded-xl space-y-3"
