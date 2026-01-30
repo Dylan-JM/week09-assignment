@@ -1,8 +1,8 @@
 import { db } from "@/app/_utils/dbConnection";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import { redirect } from "next/navigation";
 import ProfileEditor from "@/app/_components/ProfileEditor";
+import * as Avatar from "@radix-ui/react-avatar";
 
 export default async function ProfilePage({ params }) {
   const { username } = await params;
@@ -60,13 +60,21 @@ export default async function ProfilePage({ params }) {
   }
 
   return (
-    <main className="px-6 py-10 space-y-10">
-      <section className="space-y-2 border-l-4 border-blue-500 pl-4">
-        <ProfileEditor
-          profile={profile}
-          updateProfileAction={updateProfile}
-          isOwner={userId === profile.user_id}
-        />
+    <main className="px-6 py-10 space-y-10 max-w-2xl mx-auto">
+      <section className="space-y-4 border-l-4 border-blue-500 pl-4">
+        <div className="flex items-center gap-4">
+          <Avatar.Root className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-600 text-white text-2xl">
+            <Avatar.Fallback delayMs={0}>
+              {profile.nickname[0].toUpperCase()}
+            </Avatar.Fallback>
+          </Avatar.Root>
+
+          <ProfileEditor
+            profile={profile}
+            updateProfileAction={updateProfile}
+            isOwner={userId === profile.user_id}
+          />
+        </div>
       </section>
 
       <section className="space-y-4">
