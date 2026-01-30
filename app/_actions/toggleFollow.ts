@@ -4,11 +4,12 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/app/_utils/dbConnection";
 import { revalidatePath } from "next/cache";
 
-export async function toggleFollow(formData) {
+export async function toggleFollow(formData: FormData) {
   const { userId } = await auth();
   if (!userId) return;
 
-  const targetUserId = formData.get("targetUserId");
+  const targetUserId = formData.get("targetUserId") as string;
+  if (!targetUserId) return;
 
   const existing = await db.query(
     `SELECT 1 FROM follows WHERE follower_id = $1 AND following_id = $2`,
@@ -27,5 +28,5 @@ export async function toggleFollow(formData) {
     );
   }
 
-  revalidatePath("/profile");
+  revalidatePath(`/profile/${targetUserId}`);
 }

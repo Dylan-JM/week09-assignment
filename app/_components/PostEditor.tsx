@@ -1,13 +1,24 @@
 "use client";
-
 import { useState } from "react";
+
+type PostEditorProps = {
+  post: {
+    id: string;
+    content: string;
+    created_at?: string;
+    // add any other fields your post object includes
+  };
+  updatePostAction: (formData: FormData) => void;
+  deletePostAction: (formData: FormData) => void;
+  isOwner: boolean;
+};
 
 export default function PostEditor({
   post,
   updatePostAction,
   deletePostAction,
   isOwner,
-}) {
+}: PostEditorProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [content, setContent] = useState(post.content);
 

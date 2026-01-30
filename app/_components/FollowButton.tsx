@@ -1,19 +1,25 @@
 "use client";
 
+type FollowButtonProps = {
+  targetUserId: string;
+  isFollowing: boolean;
+  toggleFollowAction: (formData: FormData) => void;
+};
+
 export default function FollowButton({
   targetUserId,
   isFollowing,
   toggleFollowAction,
-}) {
+}: FollowButtonProps) {
   return (
     <form action={toggleFollowAction}>
       <input type="hidden" name="targetUserId" value={targetUserId} />
 
       <button
         className={`
-        px-3 py-1 rounded font-medium transition
-        ${isFollowing ? "border" : "text-white"}
-      `}
+          px-3 py-1 rounded font-medium transition
+          ${isFollowing ? "border" : "text-white"}
+        `}
         style={{
           backgroundColor: isFollowing
             ? "var(--color-card)"

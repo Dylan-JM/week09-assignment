@@ -4,7 +4,7 @@ import { auth } from "@clerk/nextjs/server";
 import { db } from "@/app/_utils/dbConnection";
 import { revalidatePath } from "next/cache";
 
-export async function toggleLike(formData) {
+export async function toggleLike(formData: FormData) {
   const { userId } = await auth();
   if (!userId) return;
 

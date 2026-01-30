@@ -1,67 +1,39 @@
 import { db } from "@/app/_utils/dbConnection";
+import { notFound, redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import { notFound } from "next/navigation";
-import LikeButton from "@/app/_components/LikeButton";
-import FollowButton from "@/app/_components/FollowButton";
-import { toggleLike } from "@/app/_actions/toggleLike";
-import { toggleFollow } from "@/app/_actions/toggleFollow";
-import { redirect } from "next/navigation";
+import ProfileEditor from "@/app/_components/ProfileEditor";
+import PostEditor from "@/app/_components/PostEditor";
+import * as Avatar from "@radix-ui/react-avatar";
 
 export default async function ProfilePage({ params }) {
   const { username } = await params;
   const { userId } = await auth();
 
+  type Post = {
+    id: string;
+    content: string;
+    created_at: string;
+    user_id: string;
+    is_liked?: boolean;
+    like_count?: number;
+  };
+
   const profileQuery = await db.query(
-    `
-    SELECT 
-      p.*,
-      (SELECT COUNT(*) FROM follows f WHERE f.following_id = p.user_id) AS follower_count,
-      (SELECT COUNT(*) FROM follows f WHERE f.follower_id = p.user_id) AS following_count,
-      (
-        SELECT EXISTS(
-          SELECT 1 
-          FROM follows f 
-          WHERE f.follower_id = $2 AND f.following_id = p.user_id
-        )
-      ) AS is_following
-    FROM profiles p
-    WHERE p.nickname = $1
-  `,
-    [username, userId],
+    `SELECT * FROM profiles WHERE nickname = $1`,
+    [username],
   );
 
-  if (profileQuery.rows.length === 0) {
-    notFound();
-  }
-
   const profile = profileQuery.rows[0];
+  if (!profile) notFound();
 
-  const postsQuery = await db.query(
-    `
-    SELECT 
-      p.*,
-      (
-        SELECT COUNT(*) 
-        FROM social_media_post_likes l 
-        WHERE l.post_id = p.id
-      ) AS like_count,
-      (
-        SELECT EXISTS(
-          SELECT 1 
-          FROM social_media_post_likes l 
-          WHERE l.post_id = p.id AND l.user_id = $2
-        )
-      ) AS is_liked
-    FROM social_media_posts p
-    WHERE p.user_id = $1
-    ORDER BY p.created_at DESC
-    `,
-    [profile.user_id, userId],
+  const postsQuery = await db.query<Post>(
+    `SELECT * FROM social_media_posts WHERE user_id = $1 ORDER BY created_at DESC`,
+    [profile.user_id],
   );
 
   const posts = postsQuery.rows;
 
-  async function deletePost(formData) {
+  async function deletePost(formData: FormData) {
     "use server";
 
     const { userId } = await auth();
@@ -77,99 +49,98 @@ export default async function ProfilePage({ params }) {
     redirect(`/profile/${profile.nickname}`);
   }
 
+  async function updatePost(formData: FormData) {
+    "use server";
+
+    const { userId } = await auth();
+    if (!userId) return;
+
+    const postId = formData.get("postId");
+    const content = formData.get("content");
+
+    await db.query(
+      `UPDATE social_media_posts SET content = $1 WHERE id = $2 AND user_id = $3`,
+      [content, postId, userId],
+    );
+
+    redirect(`/profile/${profile.nickname}`);
+  }
+
+  async function updateProfile(formData: FormData) {
+    "use server";
+
+    const { userId } = await auth();
+    if (!userId) return;
+
+    const nickname = formData.get("nickname");
+    const bio = formData.get("bio");
+
+    await db.query(
+      `UPDATE profiles SET nickname = $1, bio = $2 WHERE user_id = $3`,
+      [nickname, bio, userId],
+    );
+
+    redirect(`/profile/${nickname}`);
+  }
+
   return (
-    <main
-      className="px-6 py-10 max-w-2xl mx-auto space-y-10"
-      style={{ color: "var(--color-foreground)" }}
-    >
-      {/* Profile Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1
-            className="text-3xl font-bold"
-            style={{ color: "var(--color-accent)" }}
+    <main className="px-6 py-10 space-y-10 max-w-2xl mx-auto">
+      {/* PROFILE HEADER */}
+      <section className="space-y-4 border-l-4 border-blue-500 pl-4">
+        <div className="flex items-center gap-4">
+          {/* Avatar */}
+          <Avatar.Root
+            className="
+              inline-flex items-center justify-center
+              w-14 h-14 rounded-full
+              bg-white border border-gray-300 shadow-sm
+              text-blue-600 text-2xl font-bold
+            "
           >
-            {profile.nickname}
-          </h1>
+            <Avatar.Fallback delayMs={0}>
+              {profile.nickname[0].toUpperCase()}
+            </Avatar.Fallback>
+          </Avatar.Root>
 
-          {profile.bio && (
-            <p
-              className="mt-1"
-              style={{ color: "var(--color-muted-foreground)" }}
-            >
-              {profile.bio}
-            </p>
-          )}
-
-          <div
-            className="flex gap-4 mt-2 text-sm"
-            style={{ color: "var(--color-muted-foreground)" }}
-          >
-            <span>{profile.follower_count} Followers</span>
-            <span>{profile.following_count} Following</span>
-          </div>
-        </div>
-
-        {userId && userId !== profile.user_id && (
-          <FollowButton
-            targetUserId={profile.user_id}
-            isFollowing={profile.is_following}
-            toggleFollowAction={toggleFollow}
+          {/* Profile Editor */}
+          <ProfileEditor
+            profile={profile}
+            updateProfileAction={updateProfile}
+            isOwner={userId === profile.user_id}
           />
+        </div>
+      </section>
+
+      {/* POSTS */}
+      <section className="space-y-4">
+        <h2 className="text-2xl font-semibold text-blue-500">
+          Posts by {profile.nickname}
+        </h2>
+
+        {posts.length === 0 && (
+          <p className="opacity-70">This user has not posted yet.</p>
         )}
-      </div>
 
-      {/* Posts Header */}
-      <h2
-        className="text-xl font-semibold"
-        style={{ color: "var(--color-accent)" }}
-      >
-        Posts
-      </h2>
+        <ul className="space-y-8">
+          {posts.map((post: Post) => (
+            <li
+              key={post.id}
+              className="bg-white border border-gray-200 shadow-sm p-5 rounded-xl space-y-3"
+            >
+              <PostEditor
+                post={post}
+                updatePostAction={updatePost}
+                deletePostAction={deletePost}
+                isOwner={userId === profile.user_id}
+              />
 
-      {posts.length === 0 && (
-        <p style={{ color: "var(--color-muted-foreground)" }}>
-          This user hasn&apos;t posted anything yet.
-        </p>
-      )}
-
-      <ul className="space-y-8">
-        {posts.map((post) => (
-          <li key={post.id} className="space-y-3">
-            <p className="bg-white border border-gray-200 shadow-sm p-4 rounded-xl">
-              {post.content}
-            </p>
-
-            <LikeButton
-              postId={post.id}
-              isLiked={post.is_liked}
-              likeCount={post.like_count}
-              toggleLikeAction={toggleLike}
-            />
-
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-500">
+              <span className="text-sm text-gray-500 block">
                 {new Date(post.created_at).toLocaleString()}
               </span>
-
-              {userId === profile.user_id && (
-                <form action={deletePost}>
-                  <input type="hidden" name="postId" value={post.id} />
-
-                  <button
-                    className="
-                bg-red-600 text-white px-3 py-1 rounded
-                hover:bg-red-700 transition
-              "
-                  >
-                    Delete
-                  </button>
-                </form>
-              )}
-            </div>
-          </li>
-        ))}
-      </ul>
+            </li>
+          ))}
+        </ul>
+      </section>
     </main>
   );
 }
