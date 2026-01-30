@@ -2,6 +2,7 @@ import { db } from "@/app/_utils/dbConnection";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import ProfileEditor from "@/app/_components/ProfileEditor";
+import PostEditor from "@/app/_components/PostEditor";
 import * as Avatar from "@radix-ui/react-avatar";
 
 export default async function ProfilePage({ params }) {
@@ -37,6 +38,23 @@ export default async function ProfilePage({ params }) {
     await db.query(
       `DELETE FROM social_media_posts WHERE id = $1 AND user_id = $2`,
       [postId, userId],
+    );
+
+    redirect(`/profile/${profile.nickname}`);
+  }
+
+  async function updatePost(formData) {
+    "use server";
+
+    const { userId } = await auth();
+    if (!userId) return;
+
+    const postId = formData.get("postId");
+    const content = formData.get("content");
+
+    await db.query(
+      `UPDATE social_media_posts SET content = $1 WHERE id = $2 AND user_id = $3`,
+      [content, postId, userId],
     );
 
     redirect(`/profile/${profile.nickname}`);
@@ -92,20 +110,16 @@ export default async function ProfilePage({ params }) {
               key={post.id}
               className="bg-gray-600 border border-gray-800 p-4 rounded-lg"
             >
-              <p className="mb-2">{post.content}</p>
+              <PostEditor
+                post={post}
+                updatePostAction={updatePost}
+                deletePostAction={deletePost}
+                isOwner={userId === profile.user_id}
+              />
 
-              <span className="opacity-60 text-sm">
+              <span className="opacity-60 text-sm block mt-2">
                 {new Date(post.created_at).toLocaleString()}
               </span>
-
-              {userId === profile.user_id && (
-                <form action={deletePost} className="mt-3">
-                  <input type="hidden" name="postId" value={post.id} />
-                  <button className="bg-red-600 text-white px-3 py-1 rounded hover:bg-red-700">
-                    Delete
-                  </button>
-                </form>
-              )}
             </li>
           ))}
         </ul>

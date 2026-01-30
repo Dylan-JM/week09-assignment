@@ -52,7 +52,6 @@ export default async function Header() {
             </NavigationMenu.Link>
           </NavigationMenu.Item>
 
-          {/* Push user menu to the right */}
           <div className="ml-auto" />
 
           {/* User Dropdown */}
