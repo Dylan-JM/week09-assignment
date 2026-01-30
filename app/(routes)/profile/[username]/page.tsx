@@ -133,21 +133,14 @@ export default async function ProfilePage({ params }) {
         </p>
       )}
 
-      <ul className="space-y-10">
+      <ul className="space-y-8">
         {posts.map((post) => (
-          <li key={post.id} className="space-y-4">
-            {/* Post Content */}
-            <p
-              className="p-4 rounded-xl leading-relaxed border"
-              style={{
-                backgroundColor: "var(--color-card)",
-                borderColor: "var(--color-card-border)",
-              }}
-            >
+          <li key={post.id} className="space-y-3">
+            {/* Post Card */}
+            <p className="bg-white border border-gray-200 shadow-sm p-4 rounded-xl">
               {post.content}
             </p>
 
-            {/* Like Button */}
             <LikeButton
               postId={post.id}
               isLiked={post.is_liked}
@@ -155,28 +148,19 @@ export default async function ProfilePage({ params }) {
               toggleLikeAction={toggleLike}
             />
 
-            {/* Timestamp */}
-            <span
-              className="text-sm block"
-              style={{ color: "var(--color-muted-foreground)" }}
-            >
+            <span className="text-sm text-gray-500">
               {new Date(post.created_at).toLocaleString()}
             </span>
 
-            {/* Delete Button  */}
             {userId === profile.user_id && (
-              <form action={deletePost} className="flex justify-end mt-3">
+              <form action={deletePost} className="flex justify-end">
                 <input type="hidden" name="postId" value={post.id} />
 
                 <button
                   className="
-                  px-3 py-1 rounded font-medium transition
-                  hover:bg-var(--color-danger-hover)
-                "
-                  style={{
-                    backgroundColor: "var(--color-danger)",
-                    color: "white",
-                  }}
+              bg-red-600 text-white px-3 py-1 rounded
+              hover:bg-red-700 transition
+            "
                 >
                   Delete
                 </button>

@@ -7,15 +7,13 @@
   --card: #ffffff;
   --card-border: #e5e7eb;
 
-  --muted: #6b7280;
-  --muted-foreground: #9ca3af;
+  --muted-foreground: #6b7280;
 
   --accent: #3b82f6;
   --accent-hover: #2563eb;
 
   --danger: #ef4444;
-  --danger-hover: #720000;
-  --success: #22c55e;
+  --danger-hover: #dc2626;
 }
 
 @theme {
@@ -33,7 +31,6 @@
 
   --color-danger: var(--danger);
   --color-danger-hover: var(--danger-hover);
-  --color-success: var(--success);
 
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
