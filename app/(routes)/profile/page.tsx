@@ -15,7 +15,7 @@ export default async function ProfilePage() {
     redirect(`/profile/${existing.rows[0].nickname}`);
   }
 
-  async function createProfile(formData) {
+  async function createProfile(formData: FormData) {
     "use server";
 
     const { userId } = await auth();

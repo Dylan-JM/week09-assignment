@@ -3,14 +3,26 @@ import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import * as Avatar from "@radix-ui/react-avatar";
 import * as HoverCard from "@radix-ui/react-hover-card";
-import * as Separator from "@radix-ui/react-separator";
 import LikeButton from "@/app/_components/LikeButton";
 import { toggleLike } from "@/app/_actions/toggleLike";
 
 export default async function PostsPage() {
   const { userId } = await auth();
 
-  const postsQuery = await db.query(
+  type Post = {
+    id: string;
+    user_id: string;
+    content: string;
+    created_at: string;
+
+    nickname: string;
+    bio: string | null;
+
+    like_count: number;
+    is_liked: boolean;
+  };
+
+  const postsQuery = await db.query<Post>(
     `
     SELECT 
       p.*,
@@ -35,7 +47,7 @@ export default async function PostsPage() {
     [userId],
   );
 
-  const posts = postsQuery.rows;
+  const posts: Post[] = postsQuery.rows;
 
   return (
     <main

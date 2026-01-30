@@ -20,7 +20,7 @@ export default async function CreatePostPage() {
     redirect("/profile");
   }
 
-  async function createPost(formData) {
+  async function createPost(formData: FormData) {
     "use server";
 
     const { userId } = await auth();

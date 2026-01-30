@@ -126,7 +126,7 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
         )}
 
         <ul className="space-y-8">
-          {posts.map((post) => (
+          {posts.map((post: Post) => (
             <li
               key={post.id}
               className="bg-white border border-gray-200 shadow-sm p-5 rounded-xl space-y-3"
