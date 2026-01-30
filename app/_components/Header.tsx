@@ -20,6 +20,10 @@ export default async function Header() {
 
   return (
     <header className="w-full bg-blue-600 text-white p-4 flex gap-6">
+      <Link href="/" className="hover:underline">
+        Home
+      </Link>
+
       <Link href="/posts" className="hover:underline">
         Posts
       </Link>
