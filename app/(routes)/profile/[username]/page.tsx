@@ -136,7 +136,6 @@ export default async function ProfilePage({ params }) {
       <ul className="space-y-8">
         {posts.map((post) => (
           <li key={post.id} className="space-y-3">
-            {/* Post Card */}
             <p className="bg-white border border-gray-200 shadow-sm p-4 rounded-xl">
               {post.content}
             </p>
@@ -148,24 +147,26 @@ export default async function ProfilePage({ params }) {
               toggleLikeAction={toggleLike}
             />
 
-            <span className="text-sm text-gray-500">
-              {new Date(post.created_at).toLocaleString()}
-            </span>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-500">
+                {new Date(post.created_at).toLocaleString()}
+              </span>
 
-            {userId === profile.user_id && (
-              <form action={deletePost} className="flex justify-end">
-                <input type="hidden" name="postId" value={post.id} />
+              {userId === profile.user_id && (
+                <form action={deletePost}>
+                  <input type="hidden" name="postId" value={post.id} />
 
-                <button
-                  className="
-              bg-red-600 text-white px-3 py-1 rounded
-              hover:bg-red-700 transition
-            "
-                >
-                  Delete
-                </button>
-              </form>
-            )}
+                  <button
+                    className="
+                bg-red-600 text-white px-3 py-1 rounded
+                hover:bg-red-700 transition
+              "
+                  >
+                    Delete
+                  </button>
+                </form>
+              )}
+            </div>
           </li>
         ))}
       </ul>

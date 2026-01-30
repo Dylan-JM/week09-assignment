@@ -69,7 +69,7 @@ export default async function Header() {
             <DropdownMenu.Root>
               <DropdownMenu.Trigger asChild>
                 <button className="outline-none">
-                  <Avatar.Root className="w-9 h-9 rounded-full bg-white text-blue-600 flex items-center justify-center font-bold">
+                  <Avatar.Root className=" w-9 h-9 rounded-full bg-white border border-gray-300  text-blue-600 flex items-center justify-center font-bold shadow-sm">
                     <Avatar.Fallback delayMs={0}>
                       {nickname[0].toUpperCase()}
                     </Avatar.Fallback>
@@ -80,22 +80,21 @@ export default async function Header() {
               <DropdownMenu.Portal>
                 <DropdownMenu.Content
                   sideOffset={5}
-                  className="bg-gray-800 text-white rounded shadow p-2 min-w-[150px]"
+                  className=" bg-white border border-gray-200 shadow-lg rounded-xl p-2 min-w-37.5 "
                 >
+                  {" "}
                   <DropdownMenu.Item asChild>
                     <Link
                       href={`/profile/${nickname}`}
-                      className="block px-2 py-1 hover:bg-gray-700 rounded"
+                      className="block px-3 py-2 rounded-md text-gray-700 hover:bg-gray-100 transition"
                     >
                       My Profile
                     </Link>
                   </DropdownMenu.Item>
-
-                  <DropdownMenu.Separator className="h-px bg-gray-700 my-2" />
-
+                  <DropdownMenu.Separator className="h-px bg-gray-200 my-2" />
                   <DropdownMenu.Item asChild>
                     <SignOutButton redirectUrl="/sign-in">
-                      <div className="px-2 py-1 hover:bg-gray-700 rounded cursor-pointer">
+                      <div className=" px-3 py-2 rounded-md cursor-pointer  text-red-600 hover:bg-red-50 transition ">
                         Sign Out
                       </div>
                     </SignOutButton>

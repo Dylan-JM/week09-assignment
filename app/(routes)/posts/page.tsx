@@ -56,18 +56,14 @@ export default async function PostsPage() {
       )}
 
       <ul className="space-y-10">
-        {posts.map((post, index) => (
-          <li key={post.id} className="space-y-4">
+        {posts.map((post) => (
+          <li
+            key={post.id}
+            className="bg-white border border-gray-200 shadow-sm rounded-xl p-5 space-y-4"
+          >
             {/* User Header */}
             <div className="flex items-center gap-3">
-              <Avatar.Root
-                className="inline-flex items-center justify-center w-10 h-10 rounded-full font-semibold"
-                style={{
-                  backgroundColor: "var(--color-card)",
-                  border: "1px solid var(--color-card-border)",
-                  color: "var(--color-foreground)",
-                }}
-              >
+              <Avatar.Root className="inline-flex items-center justify-center w-10 h-10 rounded-full font-semibold bg-gray-100 border border-gray-300 text-gray-700">
                 <Avatar.Fallback delayMs={0}>
                   {post.nickname[0].toUpperCase()}
                 </Avatar.Fallback>
@@ -77,10 +73,7 @@ export default async function PostsPage() {
                 <HoverCard.Trigger asChild>
                   <Link
                     href={`/profile/${post.nickname}`}
-                    className="font-semibold transition"
-                    style={{
-                      color: "var(--color-accent)",
-                    }}
+                    className="font-semibold text-blue-600 hover:underline"
                   >
                     {post.nickname}
                   </Link>
@@ -89,21 +82,11 @@ export default async function PostsPage() {
                 <HoverCard.Portal>
                   <HoverCard.Content
                     sideOffset={5}
-                    className="p-4 rounded-xl shadow max-w-xs"
-                    style={{
-                      backgroundColor: "var(--color-card)",
-                      border: "1px solid var(--color-card-border)",
-                      color: "var(--color-foreground)",
-                    }}
+                    className="p-4 rounded-xl shadow max-w-xs bg-white border border-gray-200"
                   >
                     <p className="font-bold">{post.nickname}</p>
                     {post.bio && (
-                      <p
-                        className="text-sm mt-1"
-                        style={{ color: "var(--color-muted-foreground)" }}
-                      >
-                        {post.bio}
-                      </p>
+                      <p className="text-sm mt-1 text-gray-500">{post.bio}</p>
                     )}
                   </HoverCard.Content>
                 </HoverCard.Portal>
@@ -111,15 +94,7 @@ export default async function PostsPage() {
             </div>
 
             {/* Post Content */}
-            <p
-              className="p-4 rounded-xl leading-relaxed"
-              style={{
-                backgroundColor: "var(--color-card)",
-                border: "1px solid var(--color-card-border)",
-              }}
-            >
-              {post.content}
-            </p>
+            <p className="leading-relaxed text-gray-800">{post.content}</p>
 
             {/* Like Button */}
             <LikeButton
@@ -130,20 +105,9 @@ export default async function PostsPage() {
             />
 
             {/* Timestamp */}
-            <span
-              className="text-sm block"
-              style={{ color: "var(--color-muted-foreground)" }}
-            >
+            <span className="text-sm text-gray-500 block">
               {new Date(post.created_at).toLocaleString()}
             </span>
-
-            {/* Separator */}
-            {index < posts.length - 1 && (
-              <Separator.Root
-                className="h-px mt-6"
-                style={{ backgroundColor: "var(--color-card-border)" }}
-              />
-            )}
           </li>
         ))}
       </ul>
