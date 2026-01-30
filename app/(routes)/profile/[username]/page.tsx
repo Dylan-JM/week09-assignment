@@ -1,26 +1,39 @@
 import { db } from "@/app/_utils/dbConnection";
-import { notFound, redirect } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
-import ProfileEditor from "@/app/_components/ProfileEditor";
-import PostEditor from "@/app/_components/PostEditor";
-import * as Avatar from "@radix-ui/react-avatar";
+import { notFound } from "next/navigation";
 import LikeButton from "@/app/_components/LikeButton";
+import FollowButton from "@/app/_components/FollowButton";
 import { toggleLike } from "@/app/_actions/toggleLike";
+import { toggleFollow } from "@/app/_actions/toggleFollow";
 
 export default async function ProfilePage({ params }) {
   const { username } = await params;
   const { userId } = await auth();
 
   const profileQuery = await db.query(
-    `SELECT * FROM profiles WHERE nickname = $1`,
-    [username],
+    `
+    SELECT 
+      p.*,
+      (SELECT COUNT(*) FROM follows f WHERE f.following_id = p.user_id) AS follower_count,
+      (SELECT COUNT(*) FROM follows f WHERE f.follower_id = p.user_id) AS following_count,
+      (
+        SELECT EXISTS(
+          SELECT 1 
+          FROM follows f 
+          WHERE f.follower_id = $2 AND f.following_id = p.user_id
+        )
+      ) AS is_following
+    FROM profiles p
+    WHERE p.nickname = $1
+  `,
+    [username, userId],
   );
 
-  const profile = profileQuery.rows[0];
-
-  if (!profile) {
+  if (profileQuery.rows.length === 0) {
     notFound();
   }
+
+  const profile = profileQuery.rows[0];
 
   const postsQuery = await db.query(
     `
@@ -41,116 +54,63 @@ export default async function ProfilePage({ params }) {
     FROM social_media_posts p
     WHERE p.user_id = $1
     ORDER BY p.created_at DESC
-  `,
+    `,
     [profile.user_id, userId],
   );
 
   const posts = postsQuery.rows;
 
-  async function deletePost(formData) {
-    "use server";
-
-    const { userId } = await auth();
-    if (!userId) return;
-
-    const postId = formData.get("postId");
-
-    await db.query(
-      `DELETE FROM social_media_posts WHERE id = $1 AND user_id = $2`,
-      [postId, userId],
-    );
-
-    redirect(`/profile/${profile.nickname}`);
-  }
-
-  async function updatePost(formData) {
-    "use server";
-
-    const { userId } = await auth();
-    if (!userId) return;
-
-    const postId = formData.get("postId");
-    const content = formData.get("content");
-
-    await db.query(
-      `UPDATE social_media_posts SET content = $1 WHERE id = $2 AND user_id = $3`,
-      [content, postId, userId],
-    );
-
-    redirect(`/profile/${profile.nickname}`);
-  }
-
-  async function updateProfile(formData) {
-    "use server";
-
-    const { userId } = await auth();
-    if (!userId) return;
-
-    const nickname = formData.get("nickname");
-    const bio = formData.get("bio");
-
-    await db.query(
-      `UPDATE profiles SET nickname = $1, bio = $2 WHERE user_id = $3`,
-      [nickname, bio, userId],
-    );
-
-    redirect(`/profile/${nickname}`);
-  }
-
   return (
-    <main className="px-6 py-10 space-y-10 max-w-2xl mx-auto">
-      <section className="space-y-4 border-l-4 border-blue-500 pl-4">
-        <div className="flex items-center gap-4">
-          <Avatar.Root className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-blue-600 text-white text-2xl">
-            <Avatar.Fallback delayMs={0}>
-              {profile.nickname[0].toUpperCase()}
-            </Avatar.Fallback>
-          </Avatar.Root>
+    <main className="px-6 py-10 max-w-2xl mx-auto space-y-10">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-3xl font-bold text-blue-500">
+            {profile.nickname}
+          </h1>
 
-          <ProfileEditor
-            profile={profile}
-            updateProfileAction={updateProfile}
-            isOwner={userId === profile.user_id}
-          />
+          {profile.bio && <p className="opacity-70 mt-1">{profile.bio}</p>}
+
+          <div className="flex gap-4 mt-2 text-sm opacity-80">
+            <span>{profile.follower_count} Followers</span>
+            <span>{profile.following_count} Following</span>
+          </div>
         </div>
-      </section>
 
-      <section className="space-y-4">
-        <h2 className="text-2xl font-semibold text-blue-500">
-          Posts by {profile.nickname}
-        </h2>
-
-        {posts.length === 0 && (
-          <p className="opacity-70">This user has not posted yet.</p>
+        {userId && userId !== profile.user_id && (
+          <FollowButton
+            targetUserId={profile.user_id}
+            isFollowing={profile.is_following}
+            toggleFollowAction={toggleFollow}
+          />
         )}
+      </div>
 
-        <ul className="space-y-4">
-          {posts.map((post) => (
-            <li
-              key={post.id}
-              className="bg-gray-600 border border-gray-800 p-4 rounded-lg"
-            >
-              <PostEditor
-                post={post}
-                updatePostAction={updatePost}
-                deletePostAction={deletePost}
-                isOwner={userId === profile.user_id}
-              />
+      <h2 className="text-xl font-semibold text-blue-400">Posts</h2>
 
-              <span className="opacity-60 text-sm block mt-2">
-                {new Date(post.created_at).toLocaleString()}
-              </span>
+      {posts.length === 0 && (
+        <p className="opacity-70">This user hasn&apos;t posted anything yet.</p>
+      )}
 
-              <LikeButton
-                postId={post.id}
-                isLiked={post.is_liked}
-                likeCount={post.like_count}
-                toggleLikeAction={toggleLike}
-              />
-            </li>
-          ))}
-        </ul>
-      </section>
+      <ul className="space-y-10">
+        {posts.map((post) => (
+          <li key={post.id} className="space-y-4">
+            <p className="bg-gray-600 border border-gray-800 p-4 rounded-lg">
+              {post.content}
+            </p>
+
+            <LikeButton
+              postId={post.id}
+              isLiked={post.is_liked}
+              likeCount={post.like_count}
+              toggleLikeAction={toggleLike}
+            />
+
+            <span className="opacity-60 text-sm block">
+              {new Date(post.created_at).toLocaleString()}
+            </span>
+          </li>
+        ))}
+      </ul>
     </main>
   );
 }
