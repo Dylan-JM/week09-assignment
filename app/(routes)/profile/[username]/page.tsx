@@ -2,6 +2,7 @@ import { db } from "@/app/_utils/dbConnection";
 import { notFound } from "next/navigation";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
+import ProfileEditor from "@/app/_components/ProfileEditor";
 
 export default async function ProfilePage({ params }) {
   const { username } = await params;
@@ -41,12 +42,31 @@ export default async function ProfilePage({ params }) {
     redirect(`/profile/${profile.nickname}`);
   }
 
+  async function updateProfile(formData) {
+    "use server";
+
+    const { userId } = await auth();
+    if (!userId) return;
+
+    const nickname = formData.get("nickname");
+    const bio = formData.get("bio");
+
+    await db.query(
+      `UPDATE profiles SET nickname = $1, bio = $2 WHERE user_id = $3`,
+      [nickname, bio, userId],
+    );
+
+    redirect(`/profile/${nickname}`);
+  }
+
   return (
     <main className="px-6 py-10 space-y-10">
       <section className="space-y-2 border-l-4 border-blue-500 pl-4">
-        <h1 className="text-3xl font-bold text-blue-500">{profile.nickname}</h1>
-
-        {profile.bio && <p className="opacity-80">{profile.bio}</p>}
+        <ProfileEditor
+          profile={profile}
+          updateProfileAction={updateProfile}
+          isOwner={userId === profile.user_id}
+        />
       </section>
 
       <section className="space-y-4">
