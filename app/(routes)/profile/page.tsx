@@ -21,8 +21,16 @@ export default async function ProfilePage() {
     const { userId } = await auth();
     if (!userId) return;
 
-    const nickname = formData.get("nickname");
-    const bio = formData.get("bio");
+    const nicknameRaw = formData.get("nickname") as string | null;
+    const bio = formData.get("bio") as string | null;
+
+    if (!nicknameRaw) return;
+
+    const nickname = nicknameRaw.trim();
+
+    if (nickname.includes(" ")) {
+      throw new Error("Nickname must be a single word with no spaces.");
+    }
 
     await db.query(
       `INSERT INTO profiles (user_id, bio, nickname) VALUES ($1, $2, $3)`,
@@ -30,7 +38,7 @@ export default async function ProfilePage() {
     );
 
     revalidatePath("/");
-    redirect("/profile");
+    redirect(`/profile/${nickname}`);
   }
 
   return (
@@ -47,6 +55,8 @@ export default async function ProfilePage() {
             type="text"
             name="nickname"
             required
+            pattern="^\S+$"
+            title="Nickname must be a single word with no spaces."
             className="border p-2 rounded"
           />
         </div>
