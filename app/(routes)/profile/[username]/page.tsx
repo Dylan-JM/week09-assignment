@@ -17,7 +17,7 @@ export default async function ProfilePage({ params }) {
 
   const postsQuery = await db.query(
     `SELECT * FROM social_media_posts WHERE user_id = $1 ORDER BY created_at DESC`,
-    [profile.id],
+    [profile.user_id],
   );
 
   const posts = postsQuery.rows;
@@ -47,7 +47,7 @@ export default async function ProfilePage({ params }) {
           {posts.map((post) => (
             <li
               key={post.id}
-              className="bg-gray-100 border border-gray-300 p-4 rounded-lg"
+              className="bg-gray-600 border border-gray-800 p-4 rounded-lg"
             >
               <p className="mb-2">{post.content}</p>
 

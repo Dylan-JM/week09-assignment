@@ -1,8 +1,14 @@
 import { db } from "@/app/_utils/dbConnection";
+import Link from "next/link";
 
 export default async function PostsPage() {
   const postsQuery = await db.query(
-    `SELECT * FROM social_media_posts ORDER BY created_at DESC`,
+    `
+    SELECT social_media_posts.*, profiles.nickname
+    FROM social_media_posts
+    JOIN profiles ON profiles.user_id = social_media_posts.user_id
+    ORDER BY social_media_posts.created_at DESC
+    `,
   );
 
   const posts = postsQuery.rows;
@@ -14,7 +20,15 @@ export default async function PostsPage() {
       <div className="space-y-4">
         {posts.map((post) => (
           <div key={post.id} className="border p-4 rounded-lg shadow">
-            <p className="text-gray-800">{post.content}</p>
+            <Link
+              href={`/profile/${post.nickname}`}
+              className="font-semibold text-blue-600 hover:underline"
+            >
+              {post.nickname}
+            </Link>
+
+            <p className="text-gray-800 mt-2">{post.content}</p>
+
             <p className="text-sm text-gray-500 mt-2">
               {new Date(post.created_at).toLocaleString()}
             </p>
