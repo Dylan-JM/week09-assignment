@@ -57,6 +57,61 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   const posts = postsQuery.rows;
 
+  const followerCountQuery = await db.query(
+    `SELECT COUNT(*) FROM follows WHERE following_id = $1`,
+    [profile.user_id],
+  );
+
+  const followingCountQuery = await db.query(
+    `SELECT COUNT(*) FROM follows WHERE follower_id = $1`,
+    [profile.user_id],
+  );
+
+  const isFollowingQuery = await db.query(
+    `SELECT EXISTS(
+      SELECT 1 FROM follows 
+      WHERE follower_id = $1 AND following_id = $2
+    )`,
+    [userId, profile.user_id],
+  );
+
+  const followerCount = Number(followerCountQuery.rows[0].count);
+  const followingCount = Number(followingCountQuery.rows[0].count);
+  const isFollowing = isFollowingQuery.rows[0].exists;
+
+  async function toggleFollow() {
+    "use server";
+
+    const { userId } = await auth();
+    if (!userId) return;
+
+    const existsQuery = await db.query(
+      `SELECT EXISTS(
+        SELECT 1 FROM follows 
+        WHERE follower_id = $1 AND following_id = $2
+      )`,
+      [userId, profile.user_id],
+    );
+
+    const exists = existsQuery.rows[0].exists;
+
+    if (exists) {
+      await db.query(
+        `DELETE FROM follows 
+         WHERE follower_id = $1 AND following_id = $2`,
+        [userId, profile.user_id],
+      );
+    } else {
+      await db.query(
+        `INSERT INTO follows (follower_id, following_id)
+         VALUES ($1, $2)`,
+        [userId, profile.user_id],
+      );
+    }
+
+    redirect(`/profile/${profile.nickname}`);
+  }
+
   async function deletePost(formData: FormData) {
     "use server";
 
@@ -109,7 +164,6 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
 
   return (
     <main className="px-6 py-10 space-y-10 max-w-2xl mx-auto">
-      {/* PROFILE HEADER */}
       <section className="space-y-4 border-l-4 border-blue-500 pl-4">
         <div className="flex items-center gap-4">
           <Avatar.Root
@@ -131,9 +185,26 @@ export default async function ProfilePage({ params }: ProfilePageProps) {
             isOwner={userId === profile.user_id}
           />
         </div>
+
+        <div className="flex items-center gap-6">
+          {userId !== profile.user_id && (
+            <form action={toggleFollow}>
+              <button className="px-3 py-1 rounded bg-blue-600 text-white hover:bg-blue-700">
+                {isFollowing ? "Unfollow" : "Follow"}
+              </button>
+            </form>
+          )}
+
+          <div className="text-gray-700">
+            <span className="font-semibold">{followerCount}</span> Followers
+          </div>
+
+          <div className="text-gray-700">
+            <span className="font-semibold">{followingCount}</span> Following
+          </div>
+        </div>
       </section>
 
-      {/* POSTS */}
       <section className="space-y-4">
         <h2 className="text-2xl font-semibold text-blue-500">
           Posts by {profile.nickname}
